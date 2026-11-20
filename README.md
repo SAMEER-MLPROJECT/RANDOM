@@ -4,6 +4,8 @@ Understand the mathematics behind every trade.
 
 QUANTARA is a browser-based educational paper-trading terminal. The account opens with ₹10,00,000 in fictional cash. Eight fictional instruments, a simulated index and a session clock support reproducible experiments. The app stores its account on the current browser origin. It requires no account credentials, data feed or brokerage connection.
 
+[Presentation package](presentation/) · [Editable PowerPoint](presentation/QUANTARA.pptx) · [PDF slides](presentation/QUANTARA.pdf)
+
 ## Research-to-trade demonstration
 
 Open **ORACLE terminal**, inspect the supplier disruption affecting Vyra Systems and select **Propose hypothesis**. In the hypothesis laboratory, **Run statistical test** compares Vyra with its sector peer before and after comparable observations. **Open paper experiment** carries the frozen evidence into the order preview and closing Trade Autopsy. **Shadow portfolio** compares the user account with a predefined risk-aware strategy.
