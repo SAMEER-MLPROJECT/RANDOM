@@ -6,6 +6,8 @@ QUANTARA is a browser-based educational paper-trading terminal. The account open
 
 [Presentation package](presentation/) · [Editable PowerPoint](presentation/QUANTARA.pptx) · [PDF slides](presentation/QUANTARA.pdf)
 
+The site opens with a presentation guide. Select **View presentation (PDF)** to read the slides in a new tab, **Download PowerPoint** for the editable file, or **Continue to workspace** to enter the simulator. The footer keeps the slides and GitHub documentation available on every screen.
+
 ## Research-to-trade demonstration
 
 Open **ORACLE terminal**, inspect the supplier disruption affecting Vyra Systems and select **Propose hypothesis**. In the hypothesis laboratory, **Run statistical test** compares Vyra with its sector peer before and after comparable observations. **Open paper experiment** carries the frozen evidence into the order preview and closing Trade Autopsy. **Shadow portfolio** compares the user account with a predefined risk-aware strategy.

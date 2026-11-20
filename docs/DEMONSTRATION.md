@@ -6,6 +6,8 @@ Use a fresh browser profile or a separate origin for the demonstration. It start
 
 ## Two-minute walkthrough
 
+Before starting the timed walkthrough, choose **View presentation (PDF)** in the opening dialog to review the case or **Continue to workspace** to start immediately.
+
 | Time | Action | Suggested narration |
 | --- | --- | --- |
 | 0:00–0:14 | On **Command centre**, point out the fictional data label and virtual cash. | “A paper trade can make money even if the evidence behind it was weak. QUANTARA lets us recover exactly what we knew when we took the risk.” |

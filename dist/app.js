@@ -58,6 +58,10 @@ import {
 const key = "quantara.account.v1",
   app = document.querySelector("#app"),
   modal = document.querySelector("#modal");
+const slidesUrl = "./presentation/QUANTARA.pdf";
+const projectResources =
+  '<a href="./presentation/QUANTARA.pptx" download>Download PowerPoint</a>' +
+  '<a href="https://github.com/SAMEER-MLPROJECT/RANDOM#readme" target="_blank" rel="noopener noreferrer">GitHub documentation</a>';
 function load() {
   const raw = localStorage.getItem(key);
   return raw ? JSON.parse(raw) : account();
@@ -247,11 +251,14 @@ function shell(content) {
     group +
     '</span><span class="slash">/</span><b>' +
     pages[page] +
-    '</b></div><div class="header-meta"><span class="signal"></span> Simulation active <span class="divider"></span><span class="header-account">Paper account</span><span class="miniavatar">Q</span></div></header><main id="main">' +
+    '</b></div><div class="header-meta"><span class="signal"></span> Simulation active <span class="divider"></span><span class="header-account">Paper account</span><span class="miniavatar">Q</span></div></header><main id="main" tabindex="-1">' +
     content +
     "<footer><span>" +
     logo +
-    " QUANTARA</span>Fictional market data · Virtual capital only</footer></main></div>"
+    ' QUANTARA</span><nav class="project-resources" aria-label="Project resources">' +
+    '<a href="' + slidesUrl + '" target="_blank" rel="noopener">View presentation</a>' +
+    projectResources +
+    "</nav>Fictional market data · Virtual capital only</footer></main></div>"
   );
 }
 const desc = {
@@ -1312,7 +1319,7 @@ window.addEventListener("hashchange", () => {
 });
 function dialog(h, body) {
   modal.innerHTML =
-    '<div class="dialoghead"><h2>' +
+    '<div class="dialoghead"><h2 id="dialog-title">' +
     h +
     "</h2>" +
     btn("dismiss", icon("close"), "iconbtn", 'aria-label="Close dialog"') +
@@ -1732,3 +1739,17 @@ document.addEventListener("keydown", (e) => {
   }
 });
 render();
+dialog(
+  "Start with the presentation",
+  '<div class="presentation-intro">' +
+    '<img src="./presentation/cover.webp" width="960" height="540" alt="Cover of the QUANTARA presentation">' +
+    '<p>Follow a fictional supplier delay from the first report to a completed paper trade in 17 slides.</p>' +
+    '<div class="actions"><a class="primary" href="' + slidesUrl +
+    '" target="_blank" rel="noopener" data-act="dismiss" autofocus>View presentation (PDF)</a>' +
+    btn("dismiss", "Continue to workspace", "btn") +
+    '</div><nav class="project-resources" aria-label="Presentation resources">' +
+    projectResources + "</nav></div>",
+);
+modal.addEventListener("close", () => {
+  document.querySelector("#main").focus({ preventScroll: true });
+}, { once: true });

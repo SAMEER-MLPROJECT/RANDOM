@@ -33,6 +33,7 @@ with sync_playwright() as playwright:
         errors = []
         page.on("pageerror", lambda exc: errors.append(str(exc)))
         page.goto("https://release.invalid/")
+        page.get_by_role("button", name="Continue to workspace").click()
         page.get_by_role("heading", name="Command centre", exact=True).wait_for()
 
         def check():

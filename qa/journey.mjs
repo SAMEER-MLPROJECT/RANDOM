@@ -51,6 +51,14 @@ for (const width of [1440, 390]) {
   };
   const state = () => JSON.parse(w.localStorage.getItem("quantara.account.v1"));
   await import(new URL("app.js", path).href + "?width=" + width);
+  assert.ok(sel("dialog").open);
+  assert.equal(sel("#dialog-title").textContent, "Start with the presentation");
+  const intro = sel(".presentation-intro");
+  assert.equal(intro.querySelector("a.primary").getAttribute("href"), "./presentation/QUANTARA.pdf");
+  assert.equal(intro.querySelector("a[download]").getAttribute("href"), "./presentation/QUANTARA.pptx");
+  assert.equal(intro.querySelector(".project-resources a[target]").href, "https://github.com/SAMEER-MLPROJECT/RANDOM#readme");
+  await click('.presentation-intro button[data-act="dismiss"]');
+  assert.equal(sel("dialog").open, false);
   assert.equal(sel("h1").textContent, "Command centre");
   assert.equal(state().cash, 1e6);
   await action("range");
@@ -64,6 +72,8 @@ for (const width of [1440, 390]) {
     assert.ok(sel(".side").classList.contains("shown"));
   }
   await nav("market");
+  assert.equal(sel("dialog").open, false);
+  assert.equal(sel('footer a[download]').getAttribute("href"), "./presentation/QUANTARA.pptx");
   input("search", "kora", "input");
   assert.equal(w.document.querySelectorAll("#marketrows tbody tr").length, 1);
   await action("watch");
@@ -124,7 +134,10 @@ for (const width of [1440, 390]) {
       value: k === "window" ? fresh.window : fresh.window[k],
     });
   fresh.window.localStorage.setItem("quantara.account.v1", persisted);
+  fresh.window.HTMLDialogElement.prototype.showModal = w.HTMLDialogElement.prototype.showModal;
+  fresh.window.HTMLDialogElement.prototype.close = w.HTMLDialogElement.prototype.close;
   await import(new URL("app.js", path).href + "?reload=" + width);
+  assert.ok(fresh.window.document.querySelector("dialog").open);
   assert.deepEqual(
     JSON.parse(fresh.window.localStorage.getItem("quantara.account.v1")),
     snap,

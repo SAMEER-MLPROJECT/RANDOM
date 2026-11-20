@@ -21,6 +21,15 @@ test(
     const page = await fetch(origin);
     assert.equal(page.status, 200);
     assert.match(await page.text(), /QUANTARA/);
+    for (const [name, type] of [
+      ["QUANTARA.pdf", "application/pdf"],
+      ["QUANTARA.pptx", "application/vnd.openxmlformats-officedocument.presentationml.presentation"],
+      ["cover.webp", "image/webp"],
+    ]) {
+      const resource = await fetch(origin + "/presentation/" + name, { method: "HEAD" });
+      assert.equal(resource.status, 200, name);
+      assert.equal(resource.headers.get("content-type"), type, name);
+    }
     const options = {
       method: "POST",
       headers: {

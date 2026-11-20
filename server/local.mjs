@@ -13,6 +13,9 @@ const types = {
   ".svg": "image/svg+xml",
   ".json": "application/json",
   ".zip": "application/zip",
+  ".pdf": "application/pdf",
+  ".pptx": "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+  ".webp": "image/webp",
 };
 const server = createServer(async (req, res) => {
   const json = (code, data) => {

@@ -44,6 +44,7 @@ for (const width of [390, 1440]) {
       await wait();
     },
     state = () => JSON.parse(w.localStorage.getItem("quantara.account.v1"));
+  await click('.presentation-intro button[data-act="dismiss"]');
   if (width === 390) await act("menu");
   await click('a.nav[href="#oracle"]');
   await act("source-settings");

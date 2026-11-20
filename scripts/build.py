@@ -2,10 +2,15 @@
 import json
 from pathlib import Path
 import subprocess
+import shutil
 import zipfile
 
 root = Path(__file__).resolve().parents[1]
 dist = root / "dist"
+# The portable source ZIP already contains the website copies.
+if (root / "presentation").is_dir():
+    for name in ("QUANTARA.pdf", "QUANTARA.pptx"):
+        shutil.copyfile(root / "presentation" / name, dist / "presentation" / name)
 for module in sorted(dist.glob("*.js")):
     subprocess.run(["node", "--check", str(module)], check=True)
 for file in ["index.html", "style.css", "app.js", "oracle.js", "ahead.js", "graph-data.js"]:

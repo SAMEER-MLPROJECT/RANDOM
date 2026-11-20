@@ -875,6 +875,8 @@ input {
 }
 footer {
   display: flex;
+  flex-wrap: wrap;
+  gap: 14px 24px;
   justify-content: space-between;
   align-items: center;
   margin-top: 25px;
@@ -929,6 +931,42 @@ dialog .note {
 }
 .dialoghead h2 {
   font-size: 19px;
+}
+.project-resources {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 20px;
+}
+.project-resources a {
+  color: #a8d9be;
+  font-size: 14px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+dialog:has(.presentation-intro) {
+  width: min(530px, calc(100% - 28px));
+  max-height: 90dvh;
+}
+.presentation-intro img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+.presentation-intro p {
+  font-size: 16px;
+}
+.presentation-intro .actions {
+  flex-wrap: wrap;
+}
+.presentation-intro .actions > * {
+  flex: 1 1 180px;
+  min-height: 44px;
+  border-radius: 6px;
+}
+.presentation-intro .project-resources {
+  margin-top: 18px;
 }
 #toast {
   position: fixed;
