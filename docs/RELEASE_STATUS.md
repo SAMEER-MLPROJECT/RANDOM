@@ -27,3 +27,9 @@ Native Reddit, Shodan, aviation, AIS and satellite provider integrations, arbitr
 DOM viewport tests verify interactions without measuring pixels. The managed preview relay timed out during pre-release checks. Rehearse the two-minute script in the judging environment and check any organizer accessibility or media requirements. See [demo guide](DEMONSTRATION.md).
 
 The materials include workshop guidance and product specifications. Official competition identity, problem statement, format, eligibility/IP terms, rubric, portal and deadline remain unverified. No competition submission has been made. See [compliance register](COMPETITION_COMPLIANCE.md).
+
+## Final release verification
+
+All 29 automated engine, ingestion, statistical and gateway tests passed. Both DOM journeys passed at 390 and 1440 pixels. Separate Chromium tests against the packaged release completed the ORACLE → hypothesis → buy → advance → sell → autopsy path at 390 × 844 and 1440 × 1000, visited all ten routes and detected no page errors or page-wide overflow. Eight screenshots document the rendered experience. [Walkthrough captures](DEMONSTRATION.md#walkthrough-screenshots)
+
+Sites reported a successful deployment. The production verification browser encountered a ChatGPT sign-in gate. Test the intended judge's hosted access separately from the verified offline release.

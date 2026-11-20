@@ -37,3 +37,16 @@ Allow approximately eight minutes for a live technical review. The times are reh
 - [ ] Test the judge's access path using an appropriately authorized account. Try the documented local fallback. Confirm whether the portal accepts a private URL, source archive, video or another artifact.
 - [ ] Review the exact archive for secrets, browser data, licensed assets and unexpected files. Check that the included source, demo and measurements match the release. Attribute third-party components and record any use of historical work or AI assistance as required.
 - [ ] Confirm all claims against evidence. Record any untested features or missing rules. Complete the organizer's template if provided and keep the submission receipt.
+
+## Walkthrough screenshots
+
+The following captures use the release's static assets in isolated Chromium sessions. Each starts with a fresh fictional account. The original screenshots are available at both desktop and mobile sizes.
+
+| Screen | Desktop · 1440 × 1000 | Mobile · 390 × 844 |
+| --- | --- | --- |
+| Command centre | [Desktop](screenshots/desktop-command.png) | [Mobile](screenshots/mobile-command.png) |
+| ORACLE evidence | [Desktop](screenshots/desktop-oracle.png) | [Mobile](screenshots/mobile-oracle.png) |
+| AHEAD result | [Desktop](screenshots/desktop-hypothesis.png) | [Mobile](screenshots/mobile-hypothesis.png) |
+| Closing autopsy | [Desktop](screenshots/desktop-autopsy.png) | [Mobile](screenshots/mobile-autopsy.png) |
+
+For a local reproduction, use Python Playwright with Chromium and run **python qa/capture.py**. The test intercepts its isolated fixture origin and serves the packaged static files without external requests. It exercises the complete research-to-trade workflow, checks that each visited route fits the viewport, and fails on browser page errors.
