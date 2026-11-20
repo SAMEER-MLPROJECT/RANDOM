@@ -1,3 +1,4 @@
+import { graphIntel } from "./graph.js";
 import {
   assets,
   tape,
@@ -97,7 +98,7 @@ export function indexScore(s) {
 }
 export function clusters(s, i) {
   const b = book(s),
-    g = network(s.d).group;
+    g = graphIntel(s.d).groups;
   return {
     sector: b.weights.reduce(
       (t, w, k) => t + (assets[k].sector === assets[i].sector ? w : 0),

@@ -98,6 +98,14 @@ function closeReport(s, o, lots, basis) {
     a.utility = a.pnl - 0.5 * Math.max(0, -a.pnl);
   }
   return {
+    experiments: [
+      ...new Map(
+        lots
+          .filter((l) => l.experiment)
+          .map((l) => [l.experiment.id, l.experiment]),
+      ).values(),
+    ],
+    allocation: weighted((l) => l.snap.allocation),
     decisionDay: Math.min(...lots.map((l) => l.thesis?.day ?? l.day)),
     entryQuality: weighted((l) => l.snap.quality),
     order: o.id,
@@ -142,6 +150,7 @@ function applyFill(s, o, raw, analytics = true) {
         basis: x.cost,
         fee: x.fee,
         slip: x.slip,
+        ...(o.experiment ? { experiment: structuredClone(o.experiment) } : {}),
         snap: o.snap,
         thesis: o.thesis ?? o.snap,
       });

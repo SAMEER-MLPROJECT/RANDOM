@@ -4,6 +4,40 @@ Understand the mathematics behind every trade.
 
 QUANTARA is a browser-based educational paper-trading terminal. The account opens with ₹10,00,000 in fictional cash. Eight fictional instruments, a simulated index and a session clock support reproducible experiments. The app stores its account on the current browser origin. It requires no account credentials, data feed or brokerage connection.
 
+## Research-to-trade demonstration
+
+Open **ORACLE terminal**, inspect the supplier disruption affecting Vyra Systems and select **Propose hypothesis**. In the hypothesis laboratory, **Run statistical test** compares Vyra with its sector peer before and after comparable observations. **Open paper experiment** carries the frozen evidence into the order preview and closing Trade Autopsy. **Shadow portfolio** compares the user account with a predefined risk-aware strategy.
+
+~~~mermaid
+flowchart LR
+ O[ORACLE sources] --> E[Attributed event and evidence]
+ E --> H[AHEAD frozen hypothesis]
+ H --> T[Matched study and registry]
+ T --> A[ARENA order preview]
+ R[RIFT regime and graph risk] --> A
+ A --> L[Confirmed paper ledger]
+ L --> U[Trade Autopsy]
+ R --> S[Shadow portfolio]
+ S --> C[Portfolio comparison]
+ L --> C
+~~~
+
+[Competition compliance](docs/COMPETITION_COMPLIANCE.md) · [Two-minute demo](docs/DEMONSTRATION.md) · [Implementation status](docs/RELEASE_STATUS.md) · [Four-way benchmark](docs/BENCHMARK.md) · [Graph methods](docs/GRAPH_METHODS.md)
+
+## Optional configured sources and language model
+
+Run **npm start** with Node 24 to use the local gateway at http://127.0.0.1:8000. The hosted demo uses offline fixtures. Keep provider configuration exclusively in the server environment.
+
+- Set QUANTARA_MODEL_URL to an authorized HTTPS chat-completion endpoint and QUANTARA_MODEL_NAME to a model identifier. QUANTARA_MODEL_KEY is optional. In ORACLE select **Use configured model**. The server sends the fictional event type, issuer, peer and design. Provider failure falls back to the fixed proposal.
+- For CORPORATE, SOCIAL, INFRASTRUCTURE, LOGISTICS and MARKET configure QUANTARA_&lt;CHANNEL&gt;_URL and QUANTARA_&lt;CHANNEL&gt;_LICENSE with an authorized normalized fictional feed and its license. Locally use **Configure sources → Sync a configured source**. The hosted app also accepts local JSON. See the [sample batch](dist/sample-observations.json). Imported IDs and original-source IDs begin with local-. Timestamps use simulated sessions.
+- Source requests cache successful responses for 60 seconds, combine concurrent reads, retry transient server errors once and observe rate-limit cooldowns. Source selections and imported records persist with the account.
+
+## AHEAD and evidence interpretation
+
+ORACLE extracts three event classes using a fictional entity directory and explicit classification rules. Each record has an original-source ID, attributed issuer, excerpt, event time, publication time and observation time. ERI groups shared origins before combining authority, attribution, publication lag, corroboration and contradiction. Extraction confidence and ERI are heuristic evidence indicators.
+
+Each proposal freezes its eligible cases and source evidence. AHEAD compares five sessions before and after the first supporting observation against a fixed same-sector peer. Supplier cases measure mean absolute daily returns as a volatility proxy. The other two families measure mean daily returns. Up to 48 non-overlapping, mature cases are eligible. A two-sided sign-flip test enumerates assignments through 13 cases and uses 4,096 seeded permutations above that. Percentile intervals resample cases 2,000 times. Benjamini–Yekutieli adjusts across all three fixed families at that cutoff. Six cases are required for a decision. A significant opposite-signed effect rejects the proposal. Cross-cutoff searches and confounding limit inference. A later withdrawal retains the original test and trade snapshots.
+
 ## Run and test
 
 Use Python 3 to serve the static application. From the project directory run:
@@ -39,7 +73,7 @@ The initial repository audit found the supplied brief and workshop material, wit
 | dist/market.js | makeTape(seed) creates a deterministic business-day price source. at(day) and window(end, count) return daily bars, index and posterior probabilities. A single shared tape supplies all local operations. |
 | dist/ledger.js | account(), place(state, order), projected(state, order), cancel(state, id) and advance(state) implement the lifecycle. projected operates on a clone. The ledger records order IDs, submission dates, statuses, fill amounts and costs, proportional entry lots and closing reports. |
 | dist/quant.js | Pure portfolio marks, risk functions, component scores, strategy backtests and block-bootstrap scenarios. Monetary returns are in rupees. Risk and return metrics are fractions before UI formatting. |
-| dist/app.js | Navigation, forms, interactive charts, persistence and access to the seven screens. State mutations are made on a fresh copy, then committed as a single localStorage value. Web Locks serialize writes across tabs in supported browsers. Storage events refresh other tabs. |
+| dist/app.js | Navigation, forms, interactive charts, persistence and access to application screens. State mutations are made on a fresh copy, then committed as a single localStorage value. Web Locks serialize writes across tabs in supported browsers. Storage events refresh other tabs. |
 | dist/ui.js and style.css | Reusable formatters, chart primitives, symbols and responsive presentation. |
 | tests and qa | Deterministic unit tests plus end-to-end DOM interaction checks at 1440 px and 390 px. |
 
@@ -53,7 +87,7 @@ An order contains instrument index, side, type, whole-share quantity and an opti
 
 **Regime model.** The Bayesian filter predicts each state's prior from the previous posterior and transition matrix, then updates with the Gaussian likelihood of the observed index return. The laboratory reports a 120-session multiclass Brier score, counts of changes to the most probable state, and confidence-bin counts, mean probability and observed hits. Lower Brier is better. Four independent synthetic seeds, evaluated over 120 sessions ending on session 220, gave rounded Brier scores of 0.241, 0.230, 0.428 and 0.191 against 0.667 for a uniform forecast. These are matched-model synthetic checks. Real-market calibration remains unmeasured.
 
-**Dependency network.** Weighted edges are rolling 45-session Pearson correlations. Components of the graph with edges of at least 0.52 define clusters that can cross sectors. Compare each pair with the preceding non-overlapping 45-session window. A simple anomaly flag uses the absolute change in Fisher-transformed correlations, divided by √(2/42), above two. Dependence, multiple comparisons and sparse samples limit its interpretation. This transparent baseline needs no learned anomaly labels. Its detection power relative to a fitted anomaly detector has not been benchmarked.
+**Dependency network.** Rolling 45-session correlations supply weighted edges above 0.52. New trade previews use modularity communities. Archived entry clusters retain their recorded membership. The RIFT laboratory reports weighted degree, adjusted Rand stability and out-of-training Isolation Forest scores. Its allocation experiment uses graph density and state similarity to set scenario probability caps. See [graph methods](docs/GRAPH_METHODS.md).
 
 **Risk.** The engine applies current marked asset weights to the trailing 120 aligned return observations. Cash earns zero. Annualized volatility uses the sample standard deviation times √252. Historical daily VaR uses the inverse empirical CDF at 95%. Expected shortfall averages exactly the worst 5% of probability mass with fractional boundary weight. Loss displays are floored at zero. For robust ES, alternative distributions live on the observed days with each probability capped at 2/N. The worst-case tail occupies the worst 0.05N/2 observations. Sorting solves this fixed-portfolio evaluation in O(N log N). Concentration is the sum of squared instrument weights relative to total equity. Drawdown uses the actual account's peak-to-trough equity loss, including the initial cash baseline. The selectable stress shock applies a common instantaneous price move to held assets.
 
@@ -67,15 +101,7 @@ An order contains instrument index, side, type, whole-share quantity and an opti
 
 ## Implementation status
 
-| Scope | Status |
-| --- | --- |
-| Seven screens, instrument search, responsive navigation, chart inspection, watchlists, cash, holdings and order history | Implemented |
-| Market, limit, stop, confirmation, impact preview, average-cost P&L, persistent state and reset | Implemented and covered by automated checks |
-| Bayesian filter, calibration view, correlation network, robust ES, stress testing, editable component weights and historical index | Implemented with the transparent baselines above |
-| Foundry strategies, resampled paths, run comparison, Trade Autopsy and shadow benchmark | Implemented |
-| Verification | Engine tests and DOM journeys passed. The managed preview relay timed out, so browser-rendered desktop/mobile layouts have not received visual sign-off. |
-| Research limits | Synthetic-only calibration, threshold-based clusters and anomaly flags, an illustrative risk budget and a finite-support robust evaluation. Independent ablations, out-of-sample real-market validation and user studies remain open. |
-| Deferred research | Regime/graph-conditioned ambiguity sets, robust allocation optimization, alternative anomaly detectors and statistically learned score weights. |
+The release adds ORACLE, Hypothesis laboratory and Shadow portfolio to the previous seven views. The [implementation report](docs/RELEASE_STATUS.md) identifies tested features, access-dependent integrations, deferred work and verification limits. Formal submission requirements remain open in the [compliance register](docs/COMPETITION_COMPLIANCE.md).
 
 ## Further experiments
 
@@ -91,3 +117,17 @@ TradingView documents practice orders, open positions, commissions and trading h
 - **Strategy resampling.** Sampling contiguous blocks preserves within-block serial dependence. Fixed block length makes the local dependence horizon explicit. An established alternative draws geometrically distributed lengths. Changing regimes, a short price history and parameter selection can all undermine inference. The 5th–95th percentile of simulated path returns describes a range of outcomes. A confidence interval needs a named estimand, such as the simulated positive-path probability, and an explicit construction. [Künsch on fixed-block bootstrap](https://doi.org/10.1214/aos/1176347265) · [Politis and Romano on stationary bootstrap](https://doi.org/10.1080/01621459.1994.10476870)
 - **Regime validation.** For a synthetic market with recorded latent states, score each filtered probability vector against its simulated state. Average the squared differences across state indicators and compare that multiclass Brier score with a fixed prior. Group probabilities by confidence to compare estimated and observed frequencies, record the sample counts, and include paths generated using independent seeds. Brier score mixes reliability and discrimination. Small bins give imprecise estimates. If the simulator has no reference states, report posterior stability and explicitly mark calibration as unmeasured. [Probability calibration](https://scikit-learn.org/stable/modules/calibration.html)
 - **Testing decision quality.** Freeze the price-history cutoff, market state, portfolio weights and prospective decision score at entry. Compare the trade with prespecified alternatives after it closes using identical execution assumptions. Audit for leakage by varying all future prices and requiring the entry score to stay identical. A composite score needs coverage disclosure because several components can share exposure to a single risk factor. Its proposed weights are educational preferences pending independent validation.
+
+## Release checks and packaging
+
+With Node 24, Python 3 and the development dependencies installed, run:
+
+~~~sh
+npm ci
+npm test
+npm run test:ui
+npm run benchmark
+npm run build
+~~~
+
+The build checks every browser module and generates a reproducible portable source ZIP under dist/. The ZIP includes the research scripts, tests, demonstration guide and compliance register. Local gateway integration tests start a short-lived loopback server on an ephemeral port.

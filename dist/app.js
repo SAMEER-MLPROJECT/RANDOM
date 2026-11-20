@@ -1,3 +1,16 @@
+import { channels, families, importBatch } from "./oracle.js";
+import { graphIntel } from "./graph.js";
+import { propose, testHypothesis, experimentSnapshot } from "./ahead.js";
+import {
+  researchState,
+  feed,
+  spotlight,
+  oracleView,
+  sourceControls,
+  hypothesisView,
+  graphResearch,
+  shadowView,
+} from "./research-ui.js";
 import {
   assets,
   tape,
@@ -53,6 +66,9 @@ let s = load();
 if (!localStorage.getItem(key)) localStorage.setItem(key, JSON.stringify(s));
 const pages = {
   command: "Command centre",
+  oracle: "ORACLE terminal",
+  hypothesis: "Hypothesis laboratory",
+  shadow: "Shadow portfolio",
   market: "Market intelligence",
   terminal: "Trading terminal",
   portfolio: "Portfolio lab",
@@ -80,7 +96,18 @@ let page = pages[location.hash.slice(1)] ? location.hash.slice(1) : "command",
   foundAsset = 0,
   menu = false,
   confirmOrder = null;
-let rev = 0;
+let rev = 0,
+  selectedEvent = "",
+  selectedHypothesis = "",
+  eventFilter = "all";
+const gateway = ["127.0.0.1", "localhost"].includes(location.hostname);
+const selectedStudy = () =>
+  researchState(s).registry.find(
+    (h) =>
+      h.id === researchState(s).active &&
+      h.status !== "INVALIDATED" &&
+      h.asset === i,
+  );
 const current = () => tape.at(s.d),
   price = () => current().prices[i],
   regime = () => current().prob.indexOf(Math.max(...current().prob)),
@@ -161,6 +188,7 @@ async function change(fn, msg) {
   try {
     if (navigator.locks) await navigator.locks.request(key, run);
     else run();
+    return true;
   } catch (e) {
     toast(e.message);
   }
@@ -182,14 +210,16 @@ function nav(id) {
     '" ' +
     (page === id ? 'aria-current="page"' : "") +
     ">" +
-    icon(id) +
+    icon(
+      { oracle: "radar", hypothesis: "foundry", shadow: "layers" }[id] || id,
+    ) +
     "<span>" +
     pages[id] +
     "</span></a>"
   );
 }
 function shell(content) {
-  const group = ["rift", "foundry", "autopsy"].includes(page)
+  const group = ["oracle", "hypothesis", "rift"].includes(page)
     ? "Intelligence"
     : "Workspace";
   return (
@@ -198,9 +228,9 @@ function shell(content) {
     '"><a href="#command" class="brand">' +
     logo +
     '<span>QUANTARA</span></a><div class="navgroup"><div class="eyebrow">Workspace</div>' +
-    ["command", "market", "terminal", "portfolio"].map(nav).join("") +
+    ["command", "market", "terminal", "portfolio", "shadow"].map(nav).join("") +
     '</div><div class="navgroup"><div class="eyebrow">Intelligence</div>' +
-    ["rift", "foundry", "autopsy"].map(nav).join("") +
+    ["oracle", "hypothesis", "rift", "foundry", "autopsy"].map(nav).join("") +
     '</div><div class="sidebottom">' +
     btn("guide", icon("book") + " Simulation guide", "quiet") +
     '<div class="sideacct"><span class="avatar">Q</span><div><b>Paper account</b><small>Local workspace</small></div></div></div></aside>' +
@@ -225,8 +255,14 @@ function shell(content) {
   );
 }
 const desc = {
+  oracle:
+    "Trace a fictional market event to its sources and the companies it affects.",
+  hypothesis:
+    "Turn an observation into a testable question and inspect the evidence.",
+  shadow:
+    "Compare your decisions with a risk-aware reference portfolio on the same market tape.",
   command:
-    "Your portfolio, market regime and decision intelligence at a glance.",
+    "Discover a signal, test its financial implications and follow a paper trade through to its outcome.",
   market: "Explore fictional instruments and their changing relationships.",
   terminal:
     "Simulate an order and inspect its portfolio impact before execution.",
@@ -238,7 +274,7 @@ const desc = {
 function heading(actions = "") {
   return (
     '<section class="pagehead"><div><div class="pagekicker"><i></i>' +
-    (["rift", "foundry", "autopsy"].includes(page)
+    (["oracle", "hypothesis", "rift"].includes(page)
       ? "Decision intelligence"
       : "Trading workspace") +
     "</div><h1>" +
@@ -435,6 +471,7 @@ function command() {
   return (
     heading(btn("trade", icon("plus", 16) + " Place trade", "primary")) +
     simulationBand() +
+    spotlight(s) +
     '<div class="kpis">' +
     kpi(
       "Portfolio value",
@@ -481,7 +518,8 @@ function command() {
   );
 }
 function graphCard() {
-  const { edges, group } = network(s.d),
+  const { edges } = network(s.d),
+    group = graphIntel(s.d).groups,
     pos = assets.map((a, k) => [
       180 + 117 * Math.cos((k * Math.PI) / 4 - 0.38),
       99 + 74 * Math.sin((k * Math.PI) / 4 - 0.38),
@@ -561,7 +599,7 @@ function graphCard() {
       "Flagged relationship shifts",
       edges.filter((e) => Math.abs(e.shiftZ) > 2).length + " / " + edges.length,
     ) +
-    '<p class="note">Anomaly flags use an absolute Fisher-transformed correlation shift above two standard errors. Pairwise dependence makes this a screening heuristic.</p><p class="note">Links join pairs with correlation ≥ 0.52. Connected nodes share a cluster. Shifts compare adjacent 45-session windows.</p></div></article>'
+    '<p class="note">Anomaly flags use an absolute Fisher-transformed correlation shift above two standard errors. Pairwise dependence makes this a screening heuristic.</p><p class="note">Links join pairs with correlation ≥ 0.52. Node colours identify modularity communities. Shifts compare adjacent 45-session windows.</p></div></article>'
   );
 }
 function filteredIds() {
@@ -623,6 +661,9 @@ function orderInput() {
     i,
     side,
     type: orderType,
+    ...(side === "Buy" && selectedStudy()
+      ? { experiment: experimentSnapshot(selectedStudy()) }
+      : {}),
     q: Number(quantity),
     trigger: orderType === "Market" ? null : Number(trigger),
   };
@@ -646,6 +687,11 @@ function impacts() {
       ["Annualized volatility", pct(r.vol), pct(rr.vol)],
       ["Daily CVaR · 95%", pct(r.es), pct(rr.es)],
       ["Robust daily CVaR", pct(r.rob), pct(rr.rob)],
+      [
+        "10% market shock",
+        signed(-0.1 * b.exposure),
+        signed(-0.1 * a.exposure),
+      ],
       [
         "RIFT Index",
         pre.value == null ? "—" : number(pre.value, 1),
@@ -743,6 +789,17 @@ function terminal() {
   return (
     heading() +
     simulationBand() +
+    (selectedStudy()
+      ? '<aside class="study-banner"><div><b>ARENA · Paper experiment</b><p>' +
+        hex(selectedStudy().id) +
+        " · " +
+        hex(selectedStudy().status) +
+        " · Evidence frozen " +
+        day(selectedStudy().cutoff) +
+        "</p></div>" +
+        btn("detach", "Detach from ticket", "btn small") +
+        "</aside>"
+      : "") +
     '<div class="tradegrid"><article class="panel">' +
     title(
       icon("terminal") + " Price history",
@@ -838,7 +895,7 @@ function portfolio() {
     a = comparison(s, "equity"),
     h = comparison(s, "shadow"),
     shadow = book(s.shadow, s.d),
-    g = network(s.d).group;
+    g = graphIntel(s.d).groups;
   const comp = (l, x, y) =>
     "<tr><td>" + l + "</td><td>" + x + "</td><td>" + y + "</td></tr>";
   return (
@@ -941,6 +998,7 @@ function rift() {
   return (
     heading() +
     simulationBand() +
+    graphResearch(s) +
     '<div class="twocol">' +
     regimeCard() +
     graphCard() +
@@ -1158,6 +1216,21 @@ function autopsy() {
         ) +
         kv("Realized P&L", money(r.pnl)) +
         kv("Fees / slippage", money(r.fees) + " / " + money(r.slip)) +
+        (r.experiments?.length
+          ? r.experiments
+              .map(
+                (x) =>
+                  kv("Entry hypothesis", hex(x.id) + " · " + hex(x.status)) +
+                  kv(
+                    "Evidence / adjusted q at entry",
+                    x.eri + " / " + number(x.q, 4),
+                  ),
+              )
+              .join("")
+          : "") +
+        (r.allocation != null
+          ? kv("Instrument weight at entry", pct(r.allocation))
+          : "") +
         kv("Original decision score", number(r.quality, 1) + " / 100") +
         kv("Decision first assessed", day(r.decisionDay ?? r.first)) +
         kv(
@@ -1206,9 +1279,22 @@ function autopsy() {
 function render() {
   document.title = "QUANTARA · " + pages[page];
   app.innerHTML = shell(
-    { command, market, terminal, portfolio, rift, foundry: strategy, autopsy }[
-      page
-    ](),
+    {
+      command,
+      market,
+      terminal,
+      portfolio,
+      rift,
+      foundry: strategy,
+      autopsy,
+      oracle: () =>
+        heading(btn("source-settings", "Configure sources", "btn")) +
+        simulationBand() +
+        oracleView(s, selectedEvent, eventFilter),
+      hypothesis: () =>
+        heading() + simulationBand() + hypothesisView(s, selectedHypothesis),
+      shadow: () => heading() + simulationBand() + shadowView(s),
+    }[page](),
   );
 }
 function go(id) {
@@ -1265,6 +1351,143 @@ document.addEventListener("click", async (e) => {
   const el = e.target.closest("[data-act]");
   if (!el) return;
   const act = el.dataset.act;
+  const id = el.dataset.id;
+  if (act === "sync-source" && gateway) {
+    const status = modal.querySelector("#sync-status"),
+      channel = modal.querySelector("#sync-source").value;
+    el.disabled = true;
+    status.textContent = "Reading configured feed…";
+    try {
+      const response = await fetch("/api/feed", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ channel }),
+        signal: AbortSignal.timeout(10000),
+      });
+      if (!response.ok)
+        throw Error(
+          "Source unavailable. Check the local adapter configuration or import a fixture.",
+        );
+      const payload = await response.json();
+      const raw = JSON.stringify(payload.rows);
+      importBatch(raw, s.d, researchState(s).imports);
+      if (
+        await change((d) => {
+          const r = researchState(d);
+          r.imports = importBatch(raw, d.d, r.imports);
+        })
+      )
+        status.textContent = "Imported under " + payload.license;
+    } catch (e) {
+      status.textContent = e.message;
+    } finally {
+      el.disabled = false;
+    }
+  }
+  if (act === "source-settings")
+    dialog("Source configuration", sourceControls(s));
+  if (act === "save-channels") {
+    const enabled = [...modal.querySelectorAll("[data-channel]:checked")].map(
+      (x) => x.dataset.channel,
+    );
+    modal.close();
+    await change((d) => {
+      researchState(d).channels = enabled;
+    }, "Source selection saved");
+  }
+  if (act === "select-event") {
+    selectedEvent = id;
+    render();
+  }
+  if (act === "select-hypothesis") {
+    selectedHypothesis = id;
+    render();
+  }
+  if (act === "propose" || act === "model-propose") {
+    const universe = feed(s),
+      event = universe.find((e) => e.id === id);
+    if (!event) return;
+    const proposal = propose(event, universe, s.d);
+    if (act === "model-propose" && gateway) {
+      el.disabled = true;
+      try {
+        const res = await fetch("/api/question", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ family: event.family }),
+          signal: AbortSignal.timeout(10000),
+        });
+        if (!res.ok) throw Error("unavailable");
+        const data = await res.json();
+        if (typeof data.question !== "string" || data.question.length > 500)
+          throw Error("invalid");
+        proposal.modelQuestion = data.question;
+        proposal.generator = "Configured language model + fixed study design";
+      } catch {
+        toast("Model unavailable. Using the reproducible template.");
+      }
+    }
+    selectedHypothesis = proposal.id;
+    await change((d) => {
+      const r = researchState(d);
+      if (d.d !== proposal.cutoff)
+        throw Error("Session advanced. Review the current evidence.");
+      if (!r.registry.some((h) => h.id === proposal.id))
+        r.registry.unshift(proposal);
+    });
+    go("hypothesis");
+  }
+  if (act === "test-hypothesis")
+    await change(
+      (d) =>
+        testHypothesis(
+          researchState(d).registry.find((h) => h.id === id),
+          d.d,
+        ),
+      "Statistical test recorded",
+    );
+  if (act === "experiment") {
+    const h = researchState(s).registry.find((h) => h.id === id);
+    if (!h?.result || h.status === "INVALIDATED") return;
+    i = h.asset;
+    side = "Buy";
+    orderType = "Market";
+    trigger = "";
+    if (
+      await change((d) => {
+        researchState(d).active = id;
+      })
+    )
+      go("terminal");
+  }
+  if (act === "detach")
+    await change((d) => {
+      researchState(d).active = null;
+    }, "Research context detached");
+  if (act === "invalidate")
+    dialog(
+      "Withdraw proposal",
+      '<p>Record why the study design or evidence is invalid. Its original result and any earlier trades remain in the audit history.</p><label class="field">Reason<input id="withdraw-reason" maxlength="160"></label>' +
+        btn(
+          "confirm-withdraw",
+          "Record withdrawal",
+          "danger",
+          'data-id="' + hex(id) + '"',
+        ),
+    );
+  if (act === "confirm-withdraw") {
+    const reason = modal.querySelector("#withdraw-reason").value.trim();
+    if (!reason) return;
+    modal.close();
+    await change((d) => {
+      const r = researchState(d),
+        h = r.registry.find((x) => x.id === id);
+      if (h.status === "INVALIDATED") return;
+      h.status = "INVALIDATED";
+      h.log.push({ status: "INVALIDATED", day: d.d, reason });
+      if (r.active === id) r.active = null;
+    });
+  }
   if (act === "menu") {
     menu = !menu;
     render();
@@ -1342,7 +1565,10 @@ document.addEventListener("click", async (e) => {
     );
   if (act === "reset") {
     modal.close();
-    await change((d) => Object.assign(d, account()), "Virtual account reset");
+    await change((d) => {
+      delete d.research;
+      Object.assign(d, account());
+    }, "Virtual account reset");
     reportNo = 0;
     go("command");
   }
@@ -1389,6 +1615,26 @@ document.addEventListener("click", async (e) => {
     }, "Index weights updated");
   }
 });
+document.addEventListener("change", async (e) => {
+  if (e.target.id !== "batch" || !e.target.files[0]) return;
+  const output = document.querySelector("#import-status");
+  try {
+    if (e.target.files[0].size > 250000) throw Error("File exceeds 250 KB.");
+    const raw = await e.target.files[0].text();
+    importBatch(raw, s.d, researchState(s).imports);
+    if (
+      await change((d) => {
+        const r = researchState(d);
+        r.imports = importBatch(raw, d.d, r.imports);
+      })
+    ) {
+      modal.close();
+      toast("Fictional observations imported");
+    }
+  } catch (err) {
+    output.textContent = err.message;
+  }
+});
 document.addEventListener("input", (e) => {
   const t = e.target;
   if (t.id === "search") {
@@ -1404,6 +1650,10 @@ document.addEventListener("input", (e) => {
 document.addEventListener("change", (e) => {
   const t = e.target;
   switch (t.id) {
+    case "eventFilter":
+      eventFilter = t.value;
+      selectedEvent = "";
+      break;
     case "series":
       tab = t.value === "Portfolio equity" ? "equity" : "index";
       break;
